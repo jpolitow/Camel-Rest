@@ -117,7 +117,7 @@
             <recipientList delimiter="|" id="schoolsCountQuery" customId="true">
                 <simple>https4://maps.googleapis.com/maps/api/place/radarsearch/json?location=${header.lat},${header.lng}&amp;radius=${header.radius}&amp;type=school&amp;key={{googlekey}}&amp;bridgeEndpoint=true</simple>
             </recipientList>
-            <to uri="direct:processPlaceSearch"/>e
+            <to uri="direct:processPlaceSearch"/>
             <setHeader headerName="schools">
                 <simple>${body}</simple>
             </setHeader>
