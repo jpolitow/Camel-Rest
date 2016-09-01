@@ -60,6 +60,7 @@
             <ref bean="geocodeService"/>
         </cxf:serviceBeans>
         <cxf:features>
+            <bean class="org.apache.cxf.feature.LoggingFeature" />
         </cxf:features>
 
     </cxf:rsServer>
