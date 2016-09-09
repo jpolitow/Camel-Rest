@@ -23,36 +23,20 @@
         </property>
     </bean>
 
-    <bean id="jsonProvider" class="org.apache.cxf.jaxrs.provider.json.JSONProvider"/>
-
-    <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"/>
-
-    <bean id="commonValidationFeature" class="org.apache.cxf.validation.BeanValidationFeature"/>
-
-    <bean id="validationProvider" class="org.apache.cxf.validation.BeanValidationProvider" />
-
-    <bean id="validationInInterceptor" class="org.apache.cxf.jaxrs.validation.JAXRSBeanValidationInInterceptor">
-        <property name="provider" ref="validationProvider" />
-    </bean>
-
-    <bean id="validationOutInterceptor" class="org.apache.cxf.jaxrs.validation.JAXRSBeanValidationOutInterceptor">
-        <property name="provider" ref="validationProvider" />
+    <bean id="jsonProvider" class="org.apache.cxf.jaxrs.provider.json.JSONProvider">
+        <property name="dropRootElement" value="true" />
     </bean>
 
     <bean id="groupedExchangeAggregationStrategy" class="org.apache.camel.processor.aggregate.GroupedExchangeAggregationStrategy"/>
     <bean id="headerAggregationStrategy" class="com.pgs.aggregator.HeaderAggregationStrategy"/>
 
-    <ctx:component-scan base-package="com.pgs.processor, com.pgs.rest"/>
+    <bean id="headerFilterStrategy" class="com.pgs.http.HttpHeaderFilterStrategy"/>
+
+    <ctx:component-scan base-package="com.pgs.processor, com.pgs.rest, com.pgs.validation"/>
 
     <!-- Defined the client endpoint to create the cxf-rs consumer -->
     <cxf:rsServer id="rsServer" address="http://localhost:9090/rest"
                   loggingFeatureEnabled="true" skipFaultLogging="true">
-        <cxf:inInterceptors>
-            <ref bean="validationInInterceptor"/>
-        </cxf:inInterceptors>
-        <cxf:outInterceptors>
-            <ref bean="validationOutInterceptor"/>
-        </cxf:outInterceptors>
         <cxf:providers>
             <ref bean="jsonProvider"/>
         </cxf:providers>
@@ -72,15 +56,47 @@
 
         <route id="geocodeServiceRoute">
             <from uri="{{endpoint.rest.geocodeService}}"/>
+            <log message="ExchangeId: ${exchangeId}"/>
+
+            <!-- input validation -->
+            <bean ref="validationProcessor" method="validateInput"/>
+
+            <!-- REST operation routing -->
             <recipientList>
                 <simple>direct:${header.operationName}</simple>
             </recipientList>
+
+            <!-- output validation -->
+            <bean ref="validationProcessor" method="validateBean"/>
+
+            <!-- validation exception handler -->
+            <onException>
+                <exception>javax.validation.ValidationException</exception>
+                <handled>
+                    <constant>true</constant>
+                </handled>
+                <log message="CamelExceptionCaught: ${property.CamelExceptionCaught}"/>
+                <choice>
+                    <when>
+                        <simple>${property.CamelExceptionCaught} is "javax.validation.ConstraintViolationException"</simple>
+                        <bean ref="validationProcessor" method="handleConstraintViolationException"/>
+                    </when>
+                    <when>
+                        <simple>${property.CamelExceptionCaught} is "com.pgs.validation.ResponseConstraintViolationException"</simple>
+                        <bean ref="validationProcessor" method="handleResponseConstraintViolationException"/>
+                    </when>
+                </choice>
+            </onException>
         </route>
 
         <route id="getLocationRoute">
             <from uri="direct:getLocation"/>
-            <recipientList delimiter="|">
-                <simple>https4://maps.googleapis.com/maps/api/geocode/json?address=${header.address}&amp;sensor=false&amp;key={{googlekey}}&amp;bridgeEndpoint=true</simple>
+            <setHeader headerName="CamelHttpUri">
+                <simple>https4://maps.googleapis.com/maps/api/geocode/json?address=${header.address}&amp;sensor=false&amp;key={{googlekey}}</simple>
+            </setHeader>
+            <removeHeaders pattern="*" excludePattern="CamelHttpUri"/>
+            <recipientList>
+                <simple>https4://somehost?headerFilterStrategy=headerFilterStrategy</simple>
             </recipientList>
             <unmarshal ref="jackson"/>
             <bean ref="geocodeProcessor" method="processLocation"/>
@@ -88,7 +104,7 @@
 
         <route id="getLocationInfoRoute">
             <from uri="direct:getLocationInfo"/>
-            <setHeader headerName="CopyHeaders">
+            <setHeader headerName="CamelCopyHeaders">
                 <simple>gyms,schools</simple>
             </setHeader>
             <multicast parallelProcessing="true" strategyRef="headerAggregationStrategy">
@@ -104,19 +120,14 @@
             <bean ref="placesProcessor" method="getResultsCount"/>
         </route>
 
-        <route id="googleApiPlacesRoute">
-            <from uri="direct:googleApiPlaces"/>
-            <removeHeaders pattern="CamelHttp*"/>
-            <recipientList delimiter="|">
-                <simple>https4://maps.googleapis.com/maps/api/place/radarsearch/json?location=${header.lat},${header.lng}&amp;radius=${header.radius}&amp;type=${header.type}&amp;key={{googlekey}}</simple>
-            </recipientList>
-        </route>
-
         <route id="getSchoolsCountRoute">
             <from uri="direct:getSchoolsCount"/>
-            <removeHeaders pattern="CamelHttp*"/>
-            <recipientList delimiter="|" id="schoolsCountQuery" customId="true">
-                <simple>https4://maps.googleapis.com/maps/api/place/radarsearch/json?location=${header.lat},${header.lng}&amp;radius=${header.radius}&amp;type=school&amp;key={{googlekey}}&amp;bridgeEndpoint=true</simple>
+            <setHeader headerName="CamelHttpUri">
+                <simple>https4://maps.googleapis.com/maps/api/place/radarsearch/json?location=${header.lat},${header.lng}&amp;radius=${header.radius}&amp;type=school&amp;key={{googlekey}}</simple>
+            </setHeader>
+            <removeHeaders pattern="*" excludePattern="CamelHttpUri|CamelCopyHeaders"/>
+            <recipientList>
+                <simple>https4://somehost?headerFilterStrategy=headerFilterStrategy</simple>
             </recipientList>
             <to uri="direct:processPlaceSearch"/>
             <setHeader headerName="schools">
@@ -126,9 +137,12 @@
 
         <route id="getGymsCountRoute">
             <from uri="direct:getGymsCount"/>
-            <removeHeaders pattern="CamelHttp*"/>
-            <recipientList delimiter="|" id="gymsCountQuery" customId="true">
-                <simple>https4://maps.googleapis.com/maps/api/place/radarsearch/json?location=${header.lat},${header.lng}&amp;radius=${header.radius}&amp;type=gym&amp;key={{googlekey}}&amp;bridgeEndpoint=true</simple>
+            <setHeader headerName="CamelHttpUri">
+                <simple>https4://maps.googleapis.com/maps/api/place/radarsearch/json?location=${header.lat},${header.lng}&amp;radius=${header.radius}&amp;type=gym&amp;key={{googlekey}}</simple>
+            </setHeader>
+            <removeHeaders pattern="*" excludePattern="CamelHttpUri|CamelCopyHeaders"/>
+            <recipientList>
+                <simple>https4://somehost?headerFilterStrategy=headerFilterStrategy</simple>
             </recipientList>
             <setHeader headerName="type">
                 <constant>gym</constant>

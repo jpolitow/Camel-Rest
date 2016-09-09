@@ -20,7 +20,12 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <camel.version>2.15.1.redhat-621084</camel.version>
+        <!--<camel.version>2.12.0.redhat-610379</camel.version>-->
+        <!--<cxf.version>2.7.0.redhat-610379</cxf.version>-->
+        <camel.version>2.12.0.redhat-611412</camel.version>
+        <cxf.version>2.7.0.redhat-611412</cxf.version>
+        <!--<camel.version>2.15.1.redhat-621084</camel.version>-->
+        <!--<cxf.version>3.0.4.redhat-621084</cxf.version>-->
     </properties>
 
     <dependencies>
@@ -55,17 +60,17 @@
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-frontend-jaxrs</artifactId>
-            <version>3.0.4.redhat-621084</version>
+            <version>${cxf.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-http-jetty</artifactId>
-            <version>3.0.4.redhat-621084</version>
+            <version>${cxf.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-rs-extension-providers</artifactId>
-            <version>3.0.4.redhat-621084</version>
+            <version>${cxf.version}</version>
         </dependency>
 
         <dependency>
@@ -88,7 +93,7 @@
         <dependency>
             <groupId>org.codehaus.jettison</groupId>
             <artifactId>jettison</artifactId>
-            <version>1.3.8</version>
+            <version>1.3.4</version>
         </dependency>
 
         <!-- logging -->
@@ -118,6 +123,12 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-io</artifactId>
             <version>1.3.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>19.0</version>
         </dependency>
 
          <!--testing-->

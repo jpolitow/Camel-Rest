@@ -11,7 +11,7 @@ import java.util.Arrays;
 /**
  * Created by jpolitowicz on 25.08.2016.
  *
- * Strategy which copies headers specified in header "CopyHeaders" coma separated
+ * Strategy which copies headers specified in header "CamelCopyHeaders" coma separated
  */
 public class HeaderAggregationStrategy implements AggregationStrategy {
 
@@ -21,7 +21,7 @@ public class HeaderAggregationStrategy implements AggregationStrategy {
     public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
 
         if (oldExchange != null && newExchange != null) {
-            String[] copyHeaders = StringUtils.split(oldExchange.getIn().getHeader("CopyHeaders", String.class), ",");
+            String[] copyHeaders = StringUtils.split(oldExchange.getIn().getHeader("CamelCopyHeaders", String.class), ",");
 
             log.info("Headers to copy {}", Arrays.toString(copyHeaders));
 
