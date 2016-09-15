@@ -2,6 +2,7 @@ package com.pgs.processor;
 
 import com.pgs.model.ErrorDetail;
 import com.pgs.model.LocationInfo;
+import com.theoryinpractise.halbuilder.api.RepresentationFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -55,7 +56,7 @@ public class PlacesProcessor {
             locationInfo.setGymsCount(gyms);
             locationInfo.setSchoolsCount(schools);
 
-            return Response.status(Response.Status.OK).entity(locationInfo).build();
+            return Response.status(Response.Status.OK).entity(locationInfo).type(RepresentationFactory.HAL_JSON).build();
         }
     }
 

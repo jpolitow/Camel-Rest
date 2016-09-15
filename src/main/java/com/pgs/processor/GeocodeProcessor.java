@@ -2,6 +2,7 @@ package com.pgs.processor;
 
 import com.pgs.model.Location;
 import com.pgs.model.ErrorDetail;
+import com.theoryinpractise.halbuilder.api.RepresentationFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -40,7 +41,7 @@ public class GeocodeProcessor {
             location.setLatitude((Double) locationMap.get("lat"));
             location.setLongitude((Double) locationMap.get("lng"));
 
-            return Response.ok(location, MediaType.APPLICATION_JSON).build();
+            return Response.ok(location, RepresentationFactory.HAL_JSON).build();
         } else {
 
             ErrorDetail errorDetail = new ErrorDetail();

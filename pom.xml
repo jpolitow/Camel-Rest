@@ -22,10 +22,10 @@
 
         <!--<camel.version>2.12.0.redhat-610379</camel.version>-->
         <!--<cxf.version>2.7.0.redhat-610379</cxf.version>-->
-        <camel.version>2.12.0.redhat-611412</camel.version>
-        <cxf.version>2.7.0.redhat-611412</cxf.version>
-        <!--<camel.version>2.15.1.redhat-621084</camel.version>-->
-        <!--<cxf.version>3.0.4.redhat-621084</cxf.version>-->
+        <!--<camel.version>2.12.0.redhat-611412</camel.version>-->
+        <!--<cxf.version>2.7.0.redhat-611412</cxf.version>-->
+        <camel.version>2.15.1.redhat-621084</camel.version>
+        <cxf.version>3.0.4.redhat-621084</cxf.version>
     </properties>
 
     <dependencies>
@@ -129,6 +129,18 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>19.0</version>
+        </dependency>
+
+        <!-- HAL Builder -->
+        <dependency>
+            <groupId>com.theoryinpractise</groupId>
+            <artifactId>halbuilder-jaxrs</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.theoryinpractise</groupId>
+            <artifactId>halbuilder-standard</artifactId>
+            <version>4.0.1</version>
         </dependency>
 
          <!--testing-->

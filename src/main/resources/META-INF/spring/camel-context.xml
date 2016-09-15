@@ -35,19 +35,21 @@
     <ctx:component-scan base-package="com.pgs.processor, com.pgs.rest, com.pgs.validation"/>
 
     <!-- Defined the client endpoint to create the cxf-rs consumer -->
-    <cxf:rsServer id="rsServer" address="http://localhost:9090/rest"
-                  loggingFeatureEnabled="true" skipFaultLogging="true">
+    <cxf:rsServer id="rsServer" address="http://localhost:9090/rest">
         <cxf:providers>
-            <ref bean="jsonProvider"/>
+            <!--<ref bean="jsonProvider"/>-->
+            <bean class="com.theoryinpractise.halbuilder.jaxrs.JaxRsHalBuilderSupport"/>
+
         </cxf:providers>
         <cxf:serviceBeans>
             <ref bean="geocodeService"/>
         </cxf:serviceBeans>
         <cxf:features>
-            <bean class="org.apache.cxf.feature.LoggingFeature" />
+            <bean class="org.apache.cxf.feature.LoggingFeature"/>
+            <bean class="com.pgs.hal.feature.HalFeature"/>
         </cxf:features>
-
     </cxf:rsServer>
+
 
     <camelContext id="camelContext" xmlns="http://camel.apache.org/schema/spring">
         <dataFormats>
@@ -92,7 +94,7 @@
         <route id="getLocationRoute">
             <from uri="direct:getLocation"/>
             <setHeader headerName="CamelHttpUri">
-                <simple>https4://maps.googleapis.com/maps/api/geocode/json?address=${header.address}&amp;sensor=false&amp;key={{googlekey}}</simple>
+                <simple>https://maps.googleapis.com/maps/api/geocode/json?address=${header.address}&amp;sensor=false&amp;key={{googlekey}}</simple>
             </setHeader>
             <removeHeaders pattern="*" excludePattern="CamelHttpUri"/>
             <recipientList>
@@ -123,7 +125,7 @@
         <route id="getSchoolsCountRoute">
             <from uri="direct:getSchoolsCount"/>
             <setHeader headerName="CamelHttpUri">
-                <simple>https4://maps.googleapis.com/maps/api/place/radarsearch/json?location=${header.lat},${header.lng}&amp;radius=${header.radius}&amp;type=school&amp;key={{googlekey}}</simple>
+                <simple>https://maps.googleapis.com/maps/api/place/radarsearch/json?location=${header.lat},${header.lng}&amp;radius=${header.radius}&amp;type=school&amp;key={{googlekey}}</simple>
             </setHeader>
             <removeHeaders pattern="*" excludePattern="CamelHttpUri|CamelCopyHeaders"/>
             <recipientList>
@@ -138,7 +140,7 @@
         <route id="getGymsCountRoute">
             <from uri="direct:getGymsCount"/>
             <setHeader headerName="CamelHttpUri">
-                <simple>https4://maps.googleapis.com/maps/api/place/radarsearch/json?location=${header.lat},${header.lng}&amp;radius=${header.radius}&amp;type=gym&amp;key={{googlekey}}</simple>
+                <simple>https://maps.googleapis.com/maps/api/place/radarsearch/json?location=${header.lat},${header.lng}&amp;radius=${header.radius}&amp;type=gym&amp;key={{googlekey}}</simple>
             </setHeader>
             <removeHeaders pattern="*" excludePattern="CamelHttpUri|CamelCopyHeaders"/>
             <recipientList>

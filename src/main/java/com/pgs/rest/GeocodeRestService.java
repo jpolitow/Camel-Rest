@@ -1,11 +1,17 @@
 package com.pgs.rest;
 
+import com.pgs.hal.annotation.HalLink;
+import com.pgs.hal.annotation.HalLinks;
+import com.theoryinpractise.halbuilder.api.RepresentationFactory;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.stereotype.Service;
 
-import javax.validation.constraints.*;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 /**
@@ -17,7 +23,8 @@ public class GeocodeRestService {
 
     @GET
     @Path("/location")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(RepresentationFactory.HAL_JSON)
+    @HalLinks(@HalLink(name = "next", uris = "/some/static/url"))
     public Response getLocation(@QueryParam("address")
                                 @NotBlank(message = "{validation.constraint.getLocation.notblank.address}")
                                     String address) {
@@ -26,7 +33,8 @@ public class GeocodeRestService {
 
     @GET
     @Path("/locationinfo")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(RepresentationFactory.HAL_JSON)
+    @HalLinks
     public Response getLocationInfo(@QueryParam("lat")
                                     @Min(value = -90, message = "{validation.constraint.getLocationInfo.minmax.latitude}")
                                     @Max(value = 90, message = "{validation.constraint.getLocationInfo.minmax.latitude}")
